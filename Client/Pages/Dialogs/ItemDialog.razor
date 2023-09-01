@@ -1,0 +1,73 @@
+﻿@using AutoHub.Client.Services;
+@using AutoHub.Shared.Entities;
+@using AutoHub.Shared.Models;
+
+@inject IItemService ItemSrv
+@inject IToastService ToastSrv
+
+<EditForm Model="Item" OnValidSubmit="OnSave">
+    <DataAnnotationsValidator />
+    <FormValidations @ref="FormValidation" />
+    @if (Item != null)
+    {
+        <div class="card card-body mb-3">
+            <div class="mb-3">
+                <label class="form-label">Title:</label>
+                <InputText @bind-Value="@Item.Title" class="form-control auto-focus" placeholder="Enter title" />
+                <ValidationMessage For="@(() => Item.Title)" />
+            </div>
+            <div>
+                <label class="form-label">Description:</label>
+                <InputText @bind-Value="@Item.Desc" class="form-control" placeholder="Enter Description" />
+                <ValidationMessage For="@(() => Item.Desc)" />
+            </div>
+        </div>
+    }
+    <div class="d-flex">
+        <button class="btn btn-secondary px-4" @onclick="OnClose" type="button">Close</button>
+        <button class="btn btn-@(IsCreate ? "danger" : "primary") ms-auto px-4">@(IsCreate ? "Add" : "Update") item</button>
+    </div>
+</EditForm>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [Parameter] public Item? Item { get; set; }
+    FormValidations? FormValidation { get; set; }
+    bool IsCreate => Item?.Id == 0;
+
+    async Task OnSave()
+    {
+        try
+        {
+            if (Item != null)
+            {
+                var Errors = new Dictionary<string, List<string>>();
+
+                if (await ItemSrv.IsAdded(Item.Title!.Trim(), Item.StepId, Item.Id))
+                    Errors.Add(nameof(Item.Title), new List<string> { "This title is used." });
+
+                if (Errors.Any())
+                    FormValidation?.DisplayErrors(Errors);
+                else
+                {
+                    Response<Item>? response = new();
+                    if (IsCreate)
+                        response = await ItemSrv.Create(Item);
+                    else
+                        response = await ItemSrv.Update(Item);
+
+                    if (response != null)
+                    {
+                        if (response.IsSuccess == true)
+                            await BlazoredModal.CloseAsync(ModalResult.Ok(Item));
+                        else
+                            ToastSrv?.ShowError(response.GetErrors);
+                    }
+                }
+            }
+        }
+        catch (Exception ex) { ToastSrv.ShowError(ex.InnerException?.Message ?? ex?.Message ?? "Failed"); }
+    }
+
+    async Task OnClose() => await BlazoredModal.CloseAsync(ModalResult.Cancel());
+}

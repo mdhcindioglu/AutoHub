@@ -1,0 +1,117 @@
+﻿@page "/"
+@using AutoHub.Client.Services;
+
+@inject IStepService StepSrv
+@inject IItemService ItemSrv
+@inject IToastService ToastSrv
+@inject IJSRuntime JS
+
+<LoadingData Visible="Loading" />
+
+@if (Steps?.Any() == true)
+{
+    <div class="d-flex mb-3" style="padding: 5px 25px;overflow-x: auto;">
+        @foreach (var step in Steps)
+        {
+            <div class="all-step step @(step.Selected ? "selected" : null)">
+                @if (step != Steps.First())
+                {
+                    <span class="text-white ps-4 curser" @onclick="@(() => UpdateStep(step))">@step.Title</span>
+                    <span class="text-white fs-2 py-0 pb-1 px-3 curser" @onclick="@(() => DeleteStep(step))">-</span>
+                }
+                else
+                {
+                    <span class="text-white ps-3">@step.Title</span>
+                }
+            </div>
+        }
+        <div class="all-step step-plus">
+            <span class="text-white fs-2 shadow-none curser" title="Click to add new step" @onclick="AddStep">+</span>
+        </div>
+    </div>
+
+    <div class="d-flex mb-3"><button class="btn btn-primary ms-auto" @onclick="AddItem">Add New Item</button></div>
+
+    <div class="items">
+        @if (Items != null)
+        {
+            @foreach (var item in Items)
+            {
+                <div class="item-header">
+                    <span>
+                        <button class="btn btn-link text-white shadow-none py-0" @onclick="@(() => UpdateItem(item))">Item@(item.Index)</button>
+                        <button class="btn btn-link text-white fs-2 shadow-none ms-4 py-0" @onclick="@(() => DeleteItem(item))">-</button>
+                    </span>
+                </div>
+                <ul style="padding: 0.5rem 1rem;">
+                    <li>@item.Title</li>
+                    <li>@item.Desc</li>
+                </ul>
+            }
+        }
+    </div>
+
+
+    <div class="d-flex" style="justify-content: space-around">
+        <button class="btn btn-primary" style="min-width: 100px;" disabled="@(Steps?.FirstOrDefault()?.Selected == true ? "disabled" : null)" @onclick="Prev">Previews</button>
+        <button class="btn btn-primary" style="min-width: 100px;" disabled="@(Steps?.LastOrDefault()?.Selected == true ? "disabled" : null)" @onclick="Next">Next</button>
+    </div>
+    <style>
+        .all-step {
+            display: table;
+            white-space: nowrap;
+            text-align: center;
+            margin-left: -12px;
+            min-height: 40px;
+            line-height: 40px;
+            background-color: #1b6ec2;
+            color: white;
+            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%);
+        }
+
+            .all-step.selected {
+                background-color: #4ea0f3;
+            }
+
+            .all-step span.curser {
+                cursor: pointer;
+            }
+
+        .step {
+            min-width: 100px;
+        }
+
+        .step-plus {
+            min-width: 75px;
+        }
+
+        .item-header {
+            border-bottom: 1px solid #1b6ec2;
+            display: flex;
+        }
+
+            .item-header span {
+                background-color: #1b6ec2;
+                padding: 5px 30px;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+            }
+
+                .item-header span .btn {
+                    padding: 0;
+                }
+
+                .item-header span button.fs-2 {
+                    line-height: 0;
+                }
+
+        .btn {
+            text-decoration-line: unset;
+        }
+
+        .items {
+            height: calc(100vh - 210px);
+            overflow: auto;
+        }
+    </style>
+}

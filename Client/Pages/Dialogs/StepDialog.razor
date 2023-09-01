@@ -1,0 +1,68 @@
+﻿@using AutoHub.Client.Services;
+@using AutoHub.Shared.Entities;
+@using AutoHub.Shared.Models;
+
+@inject IStepService StepSrv
+@inject IToastService ToastSrv
+
+<EditForm Model="Step" OnValidSubmit="OnSave">
+    <DataAnnotationsValidator />
+    <FormValidations @ref="FormValidation" />
+    @if (Step != null)
+    {
+        <div class="card card-body mb-3">
+            <div>
+                <label class="form-label">Title:</label>
+                <InputText @bind-Value="@Step.Title" class="form-control auto-focus" placeholder="Enter title" />
+                <ValidationMessage For="@(() => Step.Title)" />
+            </div>
+        </div>
+    }
+    <div class="d-flex">
+        <button class="btn btn-secondary px-4" @onclick="OnClose" type="button">Close</button>
+        <button class="btn btn-@(IsCreate ? "danger" : "primary") ms-auto px-4">@(IsCreate ? "Add" : "Update") step</button>
+    </div>
+</EditForm>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; } = default!;
+    [Parameter] public Step? Step { get; set; }
+    FormValidations? FormValidation { get; set; }
+    bool IsCreate => Step?.Id == 0;
+
+    async Task OnSave()
+    {
+        try
+        {
+            if (Step != null)
+            {
+                var Errors = new Dictionary<string, List<string>>();
+
+                if (await StepSrv.IsAdded(Step.Title!.Trim(), Step.Id))
+                    Errors.Add(nameof(Step.Title), new List<string> { "This title is used." });
+
+                if (Errors.Any())
+                    FormValidation?.DisplayErrors(Errors);
+                else
+                {
+                    Response<Step>? response = new();
+                    if (IsCreate)
+                        response = await StepSrv.Create(Step);
+                    else
+                        response = await StepSrv.Update(Step);
+
+                    if (response != null)
+                    {
+                        if (response.IsSuccess == true)
+                            await BlazoredModal.CloseAsync(ModalResult.Ok(Step));
+                        else
+                            ToastSrv?.ShowError(response.GetErrors);
+                    }
+                }
+            }
+        }
+        catch (Exception ex) { ToastSrv.ShowError(ex.InnerException?.Message ?? ex?.Message ?? "Failed"); }
+    }
+
+    async Task OnClose() => await BlazoredModal.CloseAsync(ModalResult.Cancel());
+}

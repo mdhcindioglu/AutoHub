@@ -1,0 +1,31 @@
+﻿@if (Visible)
+{
+    <div id="loading-data-container" class="d-flex justify-content-center align-items-center">
+        <div>
+            <div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
+                <span class="visually-hidden">@Title</span>
+            </div>
+            <div class="text-center mt-2 fs-4 text-primary">@Title</div>
+        </div>
+    </div>
+
+    <style>
+        #loading-data-container {
+            background-color: rgba(255, 255, 255, @opacity);
+            position: @position;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999999;
+        }
+    </style>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Title { get; set; } = "Loading";
+    [Parameter] public decimal opacity { get; set; } = 0.7m;
+    [Parameter] public bool InDialog { get; set; }
+    string position => InDialog ? "absolute" : "fixed";
+}
