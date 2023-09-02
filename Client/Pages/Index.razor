@@ -13,27 +13,29 @@
     <div class="d-flex mb-3" style="padding: 5px 25px;overflow-x: auto;">
         @foreach (var step in Steps)
         {
-            <div class="all-step step @(step.Selected ? "selected" : null)">
-                @if (step != Steps.First())
-                {
+            @if (step != Steps.First())
+            {
+                <div class="step @(step.Selected ? "selected" : null)">
                     <span class="text-white ps-4 curser" @onclick="@(() => UpdateStep(step))">@step.Title</span>
                     <span class="text-white fs-2 py-0 pb-1 px-3 curser" @onclick="@(() => DeleteStep(step))">-</span>
-                }
-                else
-                {
+                </div>
+            }
+            else
+            {
+                <div class="step step-side @(step.Selected ? "selected" : null)">
                     <span class="text-white ps-3">@step.Title</span>
-                }
-            </div>
+                </div>
+            }
         }
-        <div class="all-step step-plus">
-            <span class="text-white fs-2 shadow-none curser" title="Click to add new step" @onclick="AddStep">+</span>
+        <div class="step step-side">
+            <span class="text-white fs-2 curser" title="Click to add new step" @onclick="AddStep">+</span>
         </div>
     </div>
 
     <div class="d-flex mb-3"><button class="btn btn-primary ms-auto" @onclick="AddItem">Add New Item</button></div>
 
-    <div class="items">
-        @if (Items != null)
+    <div class="items mb-3 shadow-sm">
+        @if (Items?.Any() == true)
         {
             @foreach (var item in Items)
             {
@@ -43,56 +45,60 @@
                         <button class="btn btn-link text-white fs-2 shadow-none ms-4 py-0" @onclick="@(() => DeleteItem(item))">-</button>
                     </span>
                 </div>
-                <ul style="padding: 0.5rem 1rem;">
+                <ul class="bg-light">
                     <li>@item.Title</li>
                     <li>@item.Desc</li>
                 </ul>
             }
         }
+        else
+        {
+            <h5 class="text-muted text-center">No items in @Steps?.FirstOrDefault(x=>x.Selected)?.Title. Click <button class="btn btn-link text-primary px-0 shadow-none" @onclick="AddItem">Add New Item</button> to add an item.</h5>
+        }
     </div>
-
 
     <div class="d-flex" style="justify-content: space-around">
         <button class="btn btn-primary" style="min-width: 100px;" disabled="@(Steps?.FirstOrDefault()?.Selected == true ? "disabled" : null)" @onclick="Prev">Previews</button>
         <button class="btn btn-primary" style="min-width: 100px;" disabled="@(Steps?.LastOrDefault()?.Selected == true ? "disabled" : null)" @onclick="Next">Next</button>
     </div>
+
+
     <style>
-        .all-step {
-            display: table;
+        .step {
+            display: flex;
+            align-items: center;
+            text-align: center;
             white-space: nowrap;
             text-align: center;
             margin-left: -12px;
-            min-height: 40px;
-            line-height: 40px;
             background-color: #1b6ec2;
             color: white;
             clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%);
         }
 
-            .all-step.selected {
+            .step span {
+                width: 100%;
+            }
+
+            .step.selected, .step-side.selected {
                 background-color: #4ea0f3;
             }
 
-            .all-step span.curser {
+            .step span.curser {
                 cursor: pointer;
             }
 
-        .step {
+        .step-side {
             min-width: 100px;
         }
 
-        .step-plus {
-            min-width: 75px;
-        }
-
         .item-header {
-            border-bottom: 1px solid #1b6ec2;
             display: flex;
         }
 
             .item-header span {
                 background-color: #1b6ec2;
-                padding: 5px 30px;
+                padding: 5px 10px;
                 border-top-left-radius: 5px;
                 border-top-right-radius: 5px;
             }
@@ -110,8 +116,20 @@
         }
 
         .items {
-            height: calc(100vh - 210px);
+            height: calc(100vh - 225px);
             overflow: auto;
+            padding: 20px;
+            border: 1px solid #1b6ec2;
+            border-radius: 5px;
+            background-color: white;
         }
+
+            .items ul {
+                border: 1px solid #1b6ec2;
+                padding: 10px 10px 10px 30px;
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-bottom-left-radius: 5px;
+            }
     </style>
 }

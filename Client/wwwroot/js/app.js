@@ -25,7 +25,7 @@ function confirmation(message, title) {
 }
 
 function setFocus() {
-    var elements = document.getElementsByClassName("auto-focus");
+    var elements = document.getElementsByClassName('auto-focus');
     if (elements != null && elements.length > 0)
         elements[elements.length - 1].focus();
 }
